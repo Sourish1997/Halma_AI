@@ -9,6 +9,10 @@ public class Move {
         this.moveSequence = moveSequence;
     }
 
+    public char getMoveType() {
+        return moveType;
+    }
+
     public ArrayList<Location> getMoveSequence() {
         return moveSequence;
     }

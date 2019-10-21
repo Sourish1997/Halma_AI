@@ -1,5 +1,3 @@
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
-
 import java.util.*;
 
 public class GameState {
@@ -69,6 +67,95 @@ public class GameState {
         return immediateMoves;
     }
 
+    public boolean extremityOfMoveInHomeCamp(Move move, String extremity) {
+        Location location;
+        if(extremity.equals("START"))
+            location = move.getMoveSequence().get(0);
+        else
+            location = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+        if(player == 'B') {
+            if(location.getX() > 4 || location.getY() > 4)
+                return false;
+
+            Location[] excludedLocations = new Location[] {
+                    new Location(2, 4), new Location(3, 3), new Location(3, 4),
+                    new Location(4, 2), new Location(4, 3), new Location(4, 4)};
+
+            for(Location excludedLocation: excludedLocations)
+                if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                    return false;
+
+            return true;
+        } else {
+            if(location.getX() < 11 || location.getY() < 11)
+                return false;
+
+            Location[] excludedLocations = new Location[] {
+                    new Location(11, 11), new Location(11, 12), new Location(11, 13),
+                    new Location(12, 11), new Location(12, 12), new Location(13, 11)};
+
+            for(Location excludedLocation: excludedLocations)
+                if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                    return false;
+
+            return true;
+        }
+    }
+
+    public boolean extremityOfMoveInEnemyCamp(Move move, String extremity) {
+        Location location;
+        if(extremity.equals("START"))
+            location = move.getMoveSequence().get(0);
+        else
+            location = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+        if(player == 'W') {
+            if(location.getX() > 4 || location.getY() > 4)
+                return false;
+
+            Location[] excludedLocations = new Location[] {
+                    new Location(2, 4), new Location(3, 3), new Location(3, 4),
+                    new Location(4, 2), new Location(4, 3), new Location(4, 4)};
+
+            for(Location excludedLocation: excludedLocations)
+                if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                    return false;
+
+            return true;
+        } else {
+            if(location.getX() < 11 || location.getY() < 11)
+                return false;
+
+            Location[] excludedLocations = new Location[] {
+                    new Location(11, 11), new Location(11, 12), new Location(11, 13),
+                    new Location(12, 11), new Location(12, 12), new Location(13, 11)};
+
+            for(Location excludedLocation: excludedLocations)
+                if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                    return false;
+
+            return true;
+        }
+    }
+
+    public void removeIllegalMoves(ArrayList<Move> nextMoves) {
+        ArrayList<Move> nextMovesCopy = new ArrayList<>();
+        for(Move move: nextMoves)
+            nextMovesCopy.add(move);
+
+        for(Move move: nextMovesCopy) {
+            if(extremityOfMoveInHomeCamp(move, "END") && !extremityOfMoveInHomeCamp(move, "START")) {
+                System.out.println("HOME " + move);
+                nextMoves.remove(move);
+            }
+            if(extremityOfMoveInEnemyCamp(move, "START") && !extremityOfMoveInEnemyCamp(move, "END")) {
+                System.out.println("ENEMY " + move);
+                nextMoves.remove(move);
+            }
+        }
+    }
+
     public ArrayList<Move> getNextMoves() {
         ArrayList<Location> pieceLocations = getPlayerPieceLocations();
         ArrayList<Move> moves = new ArrayList<>();
@@ -106,6 +193,8 @@ public class GameState {
             }
             System.out.println();
         }
+
+        removeIllegalMoves(moves);
 
         return moves;
     }
