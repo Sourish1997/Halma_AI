@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Location {
     private int x, y;
 
@@ -18,5 +20,25 @@ public class Location {
     public String toString()
     {
         return x + "," + y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(obj == null || obj.getClass() != this.getClass())
+            return false;
+
+        Location location = (Location) obj;
+        if(x == location.getX() && y == location.getY())
+            return true;
+        else
+            return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int[] position = new int[] {x, y};
+        return Arrays.hashCode(position);
     }
 }

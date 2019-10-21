@@ -5,8 +5,8 @@ public class GameState {
     private char player;
 
     public GameState(char[][] game_board, char player) {
-        this.game_board = new char[game_board.length][];
-        for(int i = 0; i < game_board.length; i++)
+        this.game_board = new char[16][];
+        for(int i = 0; i < 16; i++)
             this.game_board[i] = game_board[i].clone();
         this.player = player;
     }
@@ -14,8 +14,8 @@ public class GameState {
     public ArrayList<Location> getPlayerPieceLocations() {
         ArrayList<Location> playerPieceLocations = new ArrayList<>();
 
-        for(int i = 0; i < game_board.length; i++)
-            for(int j = 0; j < game_board.length; j++)
+        for(int i = 0; i < 16; i++)
+            for(int j = 0; j < 16; j++)
                 if(game_board[i][j] == this.player)
                     playerPieceLocations.add(new Location(i, j));
         
@@ -23,8 +23,8 @@ public class GameState {
     }
 
     public boolean isValidLocation(Location location) {
-        if(location.getX() < 0 || location.getX() > (game_board.length - 1) || location.getY() < 0
-                || location.getY() > (game_board.length - 1))
+        if(location.getX() < 0 || location.getX() > 15 || location.getY() < 0
+                || location.getY() > 15)
             return false;
         else
             return true;
@@ -146,14 +146,85 @@ public class GameState {
 
         for(Move move: nextMovesCopy) {
             if(extremityOfMoveInHomeCamp(move, "END") && !extremityOfMoveInHomeCamp(move, "START")) {
-                System.out.println("HOME " + move);
+                // System.out.println("HOME " + move);
                 nextMoves.remove(move);
             }
             if(extremityOfMoveInEnemyCamp(move, "START") && !extremityOfMoveInEnemyCamp(move, "END")) {
-                System.out.println("ENEMY " + move);
+                // System.out.println("ENEMY " + move);
                 nextMoves.remove(move);
             }
         }
+    }
+
+    public boolean pieceInHomeCamp(ArrayList<Location> pieceLocations) {
+        boolean pieceInHomeCamp = false;
+
+        for(Location location: pieceLocations) {
+            if(player == 'B') {
+                if(location.getX() > 4 || location.getY() > 4)
+                    continue;
+
+                Location[] excludedLocations = new Location[] {
+                        new Location(2, 4), new Location(3, 3), new Location(3, 4),
+                        new Location(4, 2), new Location(4, 3), new Location(4, 4)};
+
+                for(Location excludedLocation: excludedLocations)
+                    if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                        continue;
+
+                pieceInHomeCamp = true;
+                break;
+            } else {
+                if(location.getX() < 11 || location.getY() < 11)
+                    continue;
+
+                Location[] excludedLocations = new Location[] {
+                        new Location(11, 11), new Location(11, 12), new Location(11, 13),
+                        new Location(12, 11), new Location(12, 12), new Location(13, 11)};
+
+                for(Location excludedLocation: excludedLocations)
+                    if(location.getX() == excludedLocation.getX() && location.getY() == excludedLocation.getY())
+                        continue;
+
+                pieceInHomeCamp = true;
+                break;
+            }
+        }
+
+        return pieceInHomeCamp;
+    }
+
+    public ArrayList<Move> getNextMovesFromInHomeToOutOfHome(ArrayList<Move> nextMoves) {
+        ArrayList<Move> nextMovesFromInHomeToOutOfHome = new ArrayList<>();
+        for(Move move: nextMoves)
+            if(extremityOfMoveInHomeCamp(move, "START") && !extremityOfMoveInHomeCamp(move, "END"))
+                nextMovesFromInHomeToOutOfHome.add(move);
+
+        return nextMovesFromInHomeToOutOfHome;
+    }
+
+    public int manhattanDistance(Location a, Location b) {
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
+    }
+
+    public ArrayList<Move> getNextMovesFromInHomeToAwayFromHomeCorner(ArrayList<Move> nextMoves) {
+        ArrayList<Move> nextMovesFromInHomeToAwayFromHomeCorner = new ArrayList<>();
+        Location corner;
+        if(player == 'B')
+            corner = new Location(0, 0);
+        else
+            corner = new Location(15, 15);
+
+        for(Move move: nextMoves)
+            if(extremityOfMoveInHomeCamp(move, "START")) {
+                Location start = move.getMoveSequence().get(0);
+                Location end = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+                if(manhattanDistance(start, corner) < manhattanDistance(end, corner))
+                    nextMovesFromInHomeToAwayFromHomeCorner.add(move);
+            }
+
+        return nextMovesFromInHomeToAwayFromHomeCorner;
     }
 
     public ArrayList<Move> getNextMoves() {
@@ -170,8 +241,8 @@ public class GameState {
                     Arrays.asList(location)
             )));
 
-            System.out.println("FRONTIER:\n" + frontier);
-            System.out.println("VISITED:\n" + visited);
+            // System.out.println("FRONTIER:\n" + frontier);
+            // System.out.println("VISITED:\n" + visited);
 
             while(!frontier.isEmpty()) {
                 Location current = frontier.remove(0);
@@ -186,15 +257,26 @@ public class GameState {
                         moves.add(newMove);
                         frontier.add(move.getMoveSequence().get(1));
                         visited.put(move.getMoveSequence().get(1), newMove);
-                        System.out.println("FRONTIER:\n" + frontier);
-                        System.out.println("VISITED:\n" + visited);
+                        // System.out.println("FRONTIER:\n" + frontier);
+                        // System.out.println("VISITED:\n" + visited);
                     }
                 }
             }
-            System.out.println();
+            // System.out.println();
         }
 
         removeIllegalMoves(moves);
+        if(pieceInHomeCamp(pieceLocations)) {
+            ArrayList<Move> nextMovesFromInHomeToOutOfHome = getNextMovesFromInHomeToOutOfHome(moves);
+            if(!nextMovesFromInHomeToOutOfHome.isEmpty())
+                return nextMovesFromInHomeToOutOfHome;
+            else {
+                ArrayList<Move> nextMovesFromInHomeToAwayFromHomeCorner =
+                        getNextMovesFromInHomeToAwayFromHomeCorner(moves);
+                if(!nextMovesFromInHomeToAwayFromHomeCorner.isEmpty())
+                    return nextMovesFromInHomeToAwayFromHomeCorner;
+            }
+        }
 
         return moves;
     }
