@@ -123,8 +123,8 @@ public class Main {
 
         GameState gameState = new GameState(gameBoard, player);
 
-        MinimaxAgent agent1;
-        RandomAgent agent2;
+        AlphaBetaMinimaxAgent agent1;
+        AlphaBetaMinimaxAgent agent2;
         boolean agent1Turn = true;
 
         int move_no = 0;
@@ -142,11 +142,11 @@ public class Main {
 
             if(agent1Turn) {
                 long startTime = System.currentTimeMillis();
-                agent1 = new MinimaxAgent(gameState, 2);
+                agent1 = new AlphaBetaMinimaxAgent(gameState, 2);
                 Move move = agent1.makeMove();
                 gameState.makeMove(move);
                 long endTime = System.currentTimeMillis();
-                timeRemaining1 -= (endTime - startTime) / 1000;
+                timeRemaining1 -= (double)(endTime - startTime) / 1000;
                 move_no += 1;
                 System.out.println("Agent 1 Move No " + move_no + ":");
                 System.out.println("Time Remaining: " + timeRemaining1 + "s");
@@ -155,11 +155,11 @@ public class Main {
                 agent1Turn = false;
             } else {
                 long startTime = System.currentTimeMillis();
-                agent2 = new RandomAgent(gameState);
+                agent2 = new AlphaBetaMinimaxAgent(gameState, 2);
                 Move move = agent2.makeMove();
                 gameState.makeMove(move);
                 long endTime = System.currentTimeMillis();
-                timeRemaining2 -= (endTime - startTime) / 1000;
+                timeRemaining2 -= (double)(endTime - startTime) / 1000;
                 System.out.println("Agent 2 Move No " + move_no + ":");
                 System.out.println("Time Remaining: " + timeRemaining2 + "s");
                 System.out.println(move + "\n");
