@@ -1,13 +1,13 @@
 import java.util.*;
 
 public class GameState {
-    private char[][] game_board;
+    private char[][] gameBoard;
     private char player;
 
-    public GameState(char[][] game_board, char player) {
-        this.game_board = new char[16][];
+    public GameState(char[][] gameBoard, char player) {
+        this.gameBoard = new char[16][];
         for(int i = 0; i < 16; i++)
-            this.game_board[i] = game_board[i].clone();
+            this.gameBoard[i] = gameBoard[i].clone();
         this.player = player;
     }
 
@@ -16,7 +16,7 @@ public class GameState {
 
         for(int i = 0; i < 16; i++)
             for(int j = 0; j < 16; j++)
-                if(game_board[i][j] == this.player)
+                if(gameBoard[i][j] == this.player)
                     playerPieceLocations.add(new Location(i, j));
         
         return playerPieceLocations;
@@ -48,15 +48,15 @@ public class GameState {
                 Location neighbor = new Location(location.getX() + i, location.getY() + j);
 
                 if (isValidLocation(neighbor)) {
-                    if (moveType == 'E' && game_board[neighbor.getX()][neighbor.getY()] == '.')
+                    if (moveType == 'E' && gameBoard[neighbor.getX()][neighbor.getY()] == '.')
                         immediateMoves.add(new Move('E', new ArrayList<>(
                                 Arrays.asList(location, neighbor))));
 
-                    if (moveType == 'J' && game_board[neighbor.getX()][neighbor.getY()] != '.') {
+                    if (moveType == 'J' && gameBoard[neighbor.getX()][neighbor.getY()] != '.') {
                         Location oppositeLocation = findOppositeLocation(location, neighbor);
 
                         if (isValidLocation(oppositeLocation) &&
-                                game_board[oppositeLocation.getX()][oppositeLocation.getY()] == '.')
+                                gameBoard[oppositeLocation.getX()][oppositeLocation.getY()] == '.')
                             immediateMoves.add(new Move('J', new ArrayList<>(
                                     Arrays.asList(location, oppositeLocation))));
                     }
@@ -281,12 +281,25 @@ public class GameState {
         return moves;
     }
 
-    public char[][] getGame_board() {
-        return game_board;
+    public void makeMove(Move move) {
+        Location start = move.getMoveSequence().get(0);
+        Location end = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+        gameBoard[start.getX()][start.getY()] = '.';
+        gameBoard[end.getX()][end.getY()] = player;
+
+        if(player == 'W')
+            player = 'B';
+        else
+            player = 'W';
     }
 
-    public void setGame_board(char[][] game_board) {
-        this.game_board = game_board;
+    public char[][] getGameBoard() {
+        return gameBoard;
+    }
+
+    public void setGameBoard(char[][] gameBoard) {
+        this.gameBoard = gameBoard;
     }
 
     public char getPlayer() {
