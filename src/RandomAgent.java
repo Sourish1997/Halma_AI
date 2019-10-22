@@ -4,7 +4,7 @@ import java.util.Random;
 public class RandomAgent {
     private GameState gameState;
 
-    public RandomAgent(GameState gameState, int depth) {
+    public RandomAgent(GameState gameState) {
         this.gameState = gameState;
     }
 
