@@ -1,6 +1,6 @@
 import java.io.*;
 
-public class Main {
+public class homework {
     public static String gameMode;
     public static char player;
     public static double timeRemaining;
