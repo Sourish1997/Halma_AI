@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class AlphaBetaMinimaxAgent {
+public class ForwardABMinimaxAgent {
     private GameState gameState;
     private int depth;
 
@@ -11,7 +11,7 @@ public class AlphaBetaMinimaxAgent {
     private final double MIN_HEURISTIC_VALUE = -836;
     private final double MIN_HEURISTIC_UPDATE = -22;
 
-    public AlphaBetaMinimaxAgent(GameState gameState, int depth) {
+    public ForwardABMinimaxAgent(GameState gameState, int depth) {
         this.gameState = gameState;
         this.depth = depth;
 
@@ -157,13 +157,31 @@ public class AlphaBetaMinimaxAgent {
         return newGameState;
     }
 
+    /* public ArrayList<Move> sortNextMoves(ArrayList<Move> nextMoves, GameState gameState, boolean maxing,
+                                         char playerToMax) {
+        ArrayList<WeightedMove> weightedNextMoves = new ArrayList<>();
+        for(Move move: nextMoves)
+            weightedNextMoves.add(new WeightedMove(move, heuristic(gameState, playerToMax)));
+
+        if(maxing)
+            Collections.sort(weightedNextMoves, Comparator.comparingDouble(WeightedMove::getWeight).reversed());
+        else
+            Collections.sort(weightedNextMoves, Comparator.comparingDouble(WeightedMove::getWeight));
+
+        ArrayList<Move> newNextMoves = new ArrayList<>();
+        for(WeightedMove weightedMove: weightedNextMoves)
+            newNextMoves.add(weightedMove.getMove());
+
+        return newNextMoves;
+    } */
+
     public WeightedMove minimax(GameState gameState, char playerToMax, boolean maxing, int depth,
                                 double alpha, double beta) {
         if(gameOver(gameState))
             return maxing? new WeightedMove(null, MIN_HEURISTIC_VALUE, depth):
                     new WeightedMove(null, MAX_HEURISTIC_VALUE, depth);
 
-        ArrayList<Move> nextMoves = gameState.getNextMoves();
+        ArrayList<Move> nextMoves = gameState.removeNonForwardMoves(gameState.getNextMoves());
 
         if(depth == 0 || nextMoves.isEmpty()) {
             double value = heuristic(gameState, playerToMax);

@@ -123,8 +123,8 @@ public class Main {
 
         GameState gameState = new GameState(gameBoard, player);
 
-        AlphaBetaMinimaxAgent agent1;
-        AlphaBetaMinimaxAgent agent2;
+        ForwardABMinimaxAgent agent1;
+        NonBackwardABMinimaxAgent agent2;
         boolean agent1Turn = true;
 
         int move_no = 0;
@@ -142,7 +142,7 @@ public class Main {
 
             if(agent1Turn) {
                 long startTime = System.currentTimeMillis();
-                agent1 = new AlphaBetaMinimaxAgent(gameState, 2);
+                agent1 = new ForwardABMinimaxAgent(gameState, 3);
                 Move move = agent1.makeMove();
                 gameState.makeMove(move);
                 long endTime = System.currentTimeMillis();
@@ -153,9 +153,15 @@ public class Main {
                 System.out.println(move + "\n");
                 printGameBoard(gameState);
                 agent1Turn = false;
+
+                try {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("src/time.txt", true));
+                    writer.write(timeRemaining1 + "\n");
+                    writer.close();
+                } catch(IOException e) {}
             } else {
                 long startTime = System.currentTimeMillis();
-                agent2 = new AlphaBetaMinimaxAgent(gameState, 2);
+                agent2 = new NonBackwardABMinimaxAgent(gameState, 3);
                 Move move = agent2.makeMove();
                 gameState.makeMove(move);
                 long endTime = System.currentTimeMillis();

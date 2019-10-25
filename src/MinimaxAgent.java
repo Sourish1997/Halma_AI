@@ -7,6 +7,10 @@ public class MinimaxAgent {
     private Location[] blackHomeCampLocations;
     private Location[] whiteHomeCampLocations;
 
+    private final double MAX_HEURISTIC_VALUE = 836;
+    private final double MIN_HEURISTIC_VALUE = -836;
+    private final double MIN_HEURISTIC_UPDATE = -22;
+
     public MinimaxAgent(GameState gameState, int depth) {
         this.gameState = gameState;
         this.depth = depth;
@@ -55,6 +59,35 @@ public class MinimaxAgent {
         }
     }
 
+    public boolean gameOver(GameState gameState) {
+        boolean foundEmpty = false, foundWhite = false;
+        for(Location location: blackHomeCampLocations) {
+            char pieceAtLocation = gameState.getGameBoard()[location.getX()][location.getY()];
+            if(pieceAtLocation == 'W')
+                foundWhite = true;
+            else if(pieceAtLocation == '.')
+                foundEmpty = true;
+        }
+
+        if(foundEmpty == false && foundWhite == true)
+            return true;
+
+        foundEmpty = false;
+        boolean foundBlack = false;
+        for(Location location: whiteHomeCampLocations) {
+            char pieceAtLocation = gameState.getGameBoard()[location.getX()][location.getY()];
+            if(pieceAtLocation == 'B')
+                foundBlack = true;
+            else if(pieceAtLocation == '.')
+                foundEmpty = true;
+        }
+
+        if(foundEmpty == false && foundBlack == true)
+            return true;
+
+        return false;
+    }
+
     public double euclideanDistance(Location a, Location b) {
         return Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
     }
@@ -83,7 +116,7 @@ public class MinimaxAgent {
                     }
 
                     if(!foundEmpty && foundBlack)
-                        maxValue = -20;
+                        maxValue = MIN_HEURISTIC_UPDATE;
 
                     heuristicValue -= maxValue;
                 } else if(gameState.getGameBoard()[i][j] == 'W') {
@@ -105,7 +138,7 @@ public class MinimaxAgent {
                     }
 
                     if(!foundEmpty && foundWhite)
-                        maxValue = -20;
+                        maxValue = MIN_HEURISTIC_UPDATE;
 
                     heuristicValue += maxValue;
                 }
@@ -125,29 +158,32 @@ public class MinimaxAgent {
     }
 
     public WeightedMove minimax(GameState gameState, char playerToMax, boolean maxing, int depth) {
+        if(gameOver(gameState))
+            return maxing? new WeightedMove(null, MIN_HEURISTIC_VALUE, depth):
+                    new WeightedMove(null, MAX_HEURISTIC_VALUE, depth);
+
         ArrayList<Move> nextMoves = gameState.getNextMoves();
 
         if(depth == 0 || nextMoves.isEmpty()) {
             double value = heuristic(gameState, playerToMax);
-            return new WeightedMove(null, value);
+            return new WeightedMove(null, value, depth);
         }
 
         double value = maxing? Double.NEGATIVE_INFINITY: Double.POSITIVE_INFINITY;
-        WeightedMove bestMove = new WeightedMove(null, value);
-
-        ArrayList<Double> values = new ArrayList<>();
+        WeightedMove bestMove = new WeightedMove(null, value, depth);
 
         for(Move move: nextMoves) {
             GameState childGameState = generateGameState(gameState, move);
             WeightedMove weightedMove = minimax(childGameState, playerToMax, !maxing, depth - 1);
 
-            if((maxing && weightedMove.getWeight() > value) || (!maxing && weightedMove.getWeight() < value)) {
+            if((maxing && weightedMove.getWeight() > value) || (!maxing && weightedMove.getWeight() < value)
+                    || (Double.toString(weightedMove.getWeight()).equals(Double.toString(value))
+                    && weightedMove.getDepth() > bestMove.getDepth())) {
                 value = weightedMove.getWeight();
                 bestMove.setMove(move);
                 bestMove.setWeight(value);
+                bestMove.setDepth(weightedMove.getDepth());
             }
-
-            values.add(weightedMove.getWeight());
         }
 
         return bestMove;

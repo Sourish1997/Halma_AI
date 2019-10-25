@@ -2,6 +2,7 @@ import java.util.*;
 
 public class GameState {
     private char[][] gameBoard;
+    private int[][] verticalMap;
     private char player;
 
     public GameState(char[][] gameBoard, char player) {
@@ -9,6 +10,11 @@ public class GameState {
         for(int i = 0; i < 16; i++)
             this.gameBoard[i] = gameBoard[i].clone();
         this.player = player;
+
+        verticalMap = new int[16][16];
+        for(int i = 0; i < 16; i++)
+            for(int j = 15; j >= 0; j--)
+                verticalMap[i][15 - j] = j > (15 - i)? (15 - i): j;
     }
 
     public ArrayList<Location> getPlayerPieceLocations() {
@@ -146,11 +152,9 @@ public class GameState {
 
         for(Move move: nextMovesCopy) {
             if(extremityOfMoveInHomeCamp(move, "END") && !extremityOfMoveInHomeCamp(move, "START")) {
-                // System.out.println("HOME " + move);
                 nextMoves.remove(move);
             }
             if(extremityOfMoveInEnemyCamp(move, "START") && !extremityOfMoveInEnemyCamp(move, "END")) {
-                // System.out.println("ENEMY " + move);
                 nextMoves.remove(move);
             }
         }
@@ -241,9 +245,6 @@ public class GameState {
                     Arrays.asList(location)
             )));
 
-            // System.out.println("FRONTIER:\n" + frontier);
-            // System.out.println("VISITED:\n" + visited);
-
             while(!frontier.isEmpty()) {
                 Location current = frontier.remove(0);
 
@@ -257,12 +258,9 @@ public class GameState {
                         moves.add(newMove);
                         frontier.add(move.getMoveSequence().get(1));
                         visited.put(move.getMoveSequence().get(1), newMove);
-                        // System.out.println("FRONTIER:\n" + frontier);
-                        // System.out.println("VISITED:\n" + visited);
                     }
                 }
             }
-            // System.out.println();
         }
 
         removeIllegalMoves(moves);
@@ -279,6 +277,44 @@ public class GameState {
         }
 
         return moves;
+    }
+
+    public ArrayList<Move> removeBackwardMoves(ArrayList<Move> nextMoves) {
+        ArrayList<Move> goodMoves = new ArrayList<>();
+
+        for(Move move: nextMoves) {
+            Location start = move.getMoveSequence().get(0);
+            Location end = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+            if(player == 'W' && verticalMap[end.getX()][end.getY()] >= verticalMap[start.getX()][start.getY()])
+                goodMoves.add(move);
+            else if(player == 'B' && verticalMap[end.getX()][end.getY()] <= verticalMap[start.getX()][start.getY()])
+                goodMoves.add(move);
+        }
+
+        if(goodMoves.isEmpty())
+            return nextMoves;
+        else
+            return goodMoves;
+    }
+
+    public ArrayList<Move> removeNonForwardMoves(ArrayList<Move> nextMoves) {
+        ArrayList<Move> goodMoves = new ArrayList<>();
+
+        for(Move move: nextMoves) {
+            Location start = move.getMoveSequence().get(0);
+            Location end = move.getMoveSequence().get(move.getMoveSequence().size() - 1);
+
+            if(player == 'W' && verticalMap[end.getX()][end.getY()] > verticalMap[start.getX()][start.getY()])
+                goodMoves.add(move);
+            else if(player == 'B' && verticalMap[end.getX()][end.getY()] < verticalMap[start.getX()][start.getY()])
+                goodMoves.add(move);
+        }
+
+        if(goodMoves.isEmpty())
+            return nextMoves;
+        else
+            return goodMoves;
     }
 
     public void makeMove(Move move) {
