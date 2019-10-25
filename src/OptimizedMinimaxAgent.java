@@ -1,8 +1,11 @@
 import java.util.ArrayList;
 
-public class NonBackwardABMinimaxAgent {
+public class OptimizedMinimaxAgent {
     private GameState gameState;
     private int depth;
+    private double timeRemaining;
+    private boolean maxTimeLimitExceeded = false;
+    private long startTime;
 
     private Location[] blackHomeCampLocations;
     private Location[] whiteHomeCampLocations;
@@ -11,9 +14,10 @@ public class NonBackwardABMinimaxAgent {
     private final double MIN_HEURISTIC_VALUE = -836;
     private final double MIN_HEURISTIC_UPDATE = -22;
 
-    public NonBackwardABMinimaxAgent(GameState gameState, int depth) {
+    public OptimizedMinimaxAgent(GameState gameState, double timeRemaining) {
         this.gameState = gameState;
-        this.depth = depth;
+        this.depth = 3;
+        this.timeRemaining = timeRemaining;
 
         blackHomeCampLocations = new Location[19];
         whiteHomeCampLocations = new Location[19];
@@ -157,23 +161,12 @@ public class NonBackwardABMinimaxAgent {
         return newGameState;
     }
 
-    /* public ArrayList<Move> sortNextMoves(ArrayList<Move> nextMoves, GameState gameState, boolean maxing,
-                                         char playerToMax) {
-        ArrayList<WeightedMove> weightedNextMoves = new ArrayList<>();
-        for(Move move: nextMoves)
-            weightedNextMoves.add(new WeightedMove(move, heuristic(gameState, playerToMax)));
-
-        if(maxing)
-            Collections.sort(weightedNextMoves, Comparator.comparingDouble(WeightedMove::getWeight).reversed());
-        else
-            Collections.sort(weightedNextMoves, Comparator.comparingDouble(WeightedMove::getWeight));
-
-        ArrayList<Move> newNextMoves = new ArrayList<>();
-        for(WeightedMove weightedMove: weightedNextMoves)
-            newNextMoves.add(weightedMove.getMove());
-
-        return newNextMoves;
-    } */
+    public void checkMaxTimeLimitExceeded() {
+        double timeElapsed = (double)(System.currentTimeMillis() - startTime) / 1000;
+        double timeRemaining = startTime - timeElapsed;
+        if((depth == 3 && timeRemaining <= 16) || (depth == 2 && timeRemaining <= 4))
+            maxTimeLimitExceeded = true;
+    }
 
     public WeightedMove minimax(GameState gameState, char playerToMax, boolean maxing, int depth,
                                 double alpha, double beta) {
@@ -181,9 +174,17 @@ public class NonBackwardABMinimaxAgent {
                 return maxing? new WeightedMove(null, MIN_HEURISTIC_VALUE, depth):
                         new WeightedMove(null, MAX_HEURISTIC_VALUE, depth);
 
-        ArrayList<Move> nextMoves = gameState.removeBackwardMoves(gameState.getNextMoves());
+        ArrayList<Move> nextMoves;
+        if(this.depth == 3)
+           nextMoves  = gameState.removeBackwardMoves(gameState.getNextMoves());
+        else
+            nextMoves  = gameState.getNextMoves();
 
-        if(depth == 0 || nextMoves.isEmpty()) {
+        checkMaxTimeLimitExceeded();
+        if(maxTimeLimitExceeded && depth == this.depth)
+            return new WeightedMove(nextMoves.get(0), -1, -1);
+
+        if(depth == 0 || nextMoves.isEmpty() || maxTimeLimitExceeded) {
             double value = heuristic(gameState, playerToMax);
             return new WeightedMove(null, value, depth);
         }
@@ -204,6 +205,10 @@ public class NonBackwardABMinimaxAgent {
                 bestMove.setDepth(weightedMove.getDepth());
             }
 
+            checkMaxTimeLimitExceeded();
+            if(maxTimeLimitExceeded)
+                break;
+
             if(maxing && weightedMove.getWeight() > alpha)
                 alpha = weightedMove.getWeight();
             else if(!maxing && weightedMove.getWeight() < beta)
@@ -217,7 +222,25 @@ public class NonBackwardABMinimaxAgent {
     }
 
     public Move makeMove() {
-        return minimax(gameState, gameState.getPlayer(), true, depth,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).getMove();
+        startTime = System.currentTimeMillis();
+
+        if(timeRemaining <= 0.05)
+            return gameState.getNextMoves().get(0);
+        else if(timeRemaining <= 2) {
+            depth = 1;
+            maxTimeLimitExceeded = false;
+            return minimax(gameState, gameState.getPlayer(), true, 1,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).getMove();
+        } else if(timeRemaining <= 15) {
+            depth = 2;
+            maxTimeLimitExceeded = false;
+            return minimax(gameState, gameState.getPlayer(), true, 2,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).getMove();
+        } else {
+            depth = 3;
+            maxTimeLimitExceeded = false;
+            return minimax(gameState, gameState.getPlayer(), true, 3,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).getMove();
+        }
     }
 }

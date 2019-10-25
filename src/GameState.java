@@ -231,6 +231,15 @@ public class GameState {
         return nextMovesFromInHomeToAwayFromHomeCorner;
     }
 
+    public ArrayList<Move> getNextMovesForOutOfHomePieces(ArrayList<Move> nextMoves) {
+        ArrayList<Move> getNextMovesForOutOfHomePieces = new ArrayList<>();
+        for(Move move: nextMoves)
+            if(!extremityOfMoveInHomeCamp(move, "START"))
+                getNextMovesForOutOfHomePieces.add(move);
+
+        return getNextMovesForOutOfHomePieces;
+    }
+
     public ArrayList<Move> getNextMoves() {
         ArrayList<Location> pieceLocations = getPlayerPieceLocations();
         ArrayList<Move> moves = new ArrayList<>();
@@ -273,6 +282,10 @@ public class GameState {
                         getNextMovesFromInHomeToAwayFromHomeCorner(moves);
                 if(!nextMovesFromInHomeToAwayFromHomeCorner.isEmpty())
                     return nextMovesFromInHomeToAwayFromHomeCorner;
+                else {
+                    ArrayList<Move> nextMovesForOutOfHomePieces = getNextMovesForOutOfHomePieces(moves);
+                    return nextMovesForOutOfHomePieces;
+                }
             }
         }
 

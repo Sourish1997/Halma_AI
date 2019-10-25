@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class ForwardABMinimaxAgent {
+public class ForwardMinimaxAgent {
     private GameState gameState;
     private int depth;
 
@@ -11,7 +11,7 @@ public class ForwardABMinimaxAgent {
     private final double MIN_HEURISTIC_VALUE = -836;
     private final double MIN_HEURISTIC_UPDATE = -22;
 
-    public ForwardABMinimaxAgent(GameState gameState, int depth) {
+    public ForwardMinimaxAgent(GameState gameState, int depth) {
         this.gameState = gameState;
         this.depth = depth;
 
