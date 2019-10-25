@@ -123,7 +123,7 @@ public class Main {
 
         GameState gameState = new GameState(gameBoard, player);
 
-        ForwardABMinimaxAgent agent1;
+        NonBackwardABMinimaxAgent agent1;
         NonBackwardABMinimaxAgent agent2;
         boolean agent1Turn = true;
 
@@ -142,7 +142,7 @@ public class Main {
 
             if(agent1Turn) {
                 long startTime = System.currentTimeMillis();
-                agent1 = new ForwardABMinimaxAgent(gameState, 3);
+                agent1 = new NonBackwardABMinimaxAgent(gameState, 3);
                 Move move = agent1.makeMove();
                 gameState.makeMove(move);
                 long endTime = System.currentTimeMillis();
