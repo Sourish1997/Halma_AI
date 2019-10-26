@@ -343,6 +343,10 @@ public class GameState {
             player = 'W';
     }
 
+    public int[][] getVerticalMap() {
+        return verticalMap;
+    }
+
     public char[][] getGameBoard() {
         return gameBoard;
     }

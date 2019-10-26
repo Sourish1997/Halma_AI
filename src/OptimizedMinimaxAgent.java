@@ -163,13 +163,24 @@ public class OptimizedMinimaxAgent {
 
     public void checkMaxTimeLimitExceeded() {
         double timeElapsed = (double)(System.currentTimeMillis() - startTime) / 1000;
-        double timeRemaining = startTime - timeElapsed;
-        if((depth == 3 && timeRemaining <= 16) || (depth == 2 && timeRemaining <= 4))
+        double timeRemaining = this.timeRemaining - timeElapsed;
+        if((depth == 3 && timeRemaining <= 25) || (depth == 2 && timeRemaining <= 2))
             maxTimeLimitExceeded = true;
     }
 
     public WeightedMove minimax(GameState gameState, char playerToMax, boolean maxing, int depth,
                                 double alpha, double beta) {
+        checkMaxTimeLimitExceeded();
+        if(maxTimeLimitExceeded) {
+            if(depth == this.depth) {
+                ArrayList<Move> nextMoves  = gameState.removeBackwardMoves(gameState.getNextMoves());
+                return new WeightedMove(nextMoves.get(0), -1, -1);
+            } else {
+                double value = heuristic(gameState, playerToMax);
+                return new WeightedMove(null, value, depth);
+            }
+        }
+
         if(gameOver(gameState))
                 return maxing? new WeightedMove(null, MIN_HEURISTIC_VALUE, depth):
                         new WeightedMove(null, MAX_HEURISTIC_VALUE, depth);
@@ -180,11 +191,7 @@ public class OptimizedMinimaxAgent {
         else
             nextMoves  = gameState.getNextMoves();
 
-        checkMaxTimeLimitExceeded();
-        if(maxTimeLimitExceeded && depth == this.depth)
-            return new WeightedMove(nextMoves.get(0), -1, -1);
-
-        if(depth == 0 || nextMoves.isEmpty() || maxTimeLimitExceeded) {
+        if(depth == 0 || nextMoves.isEmpty()) {
             double value = heuristic(gameState, playerToMax);
             return new WeightedMove(null, value, depth);
         }
@@ -231,7 +238,7 @@ public class OptimizedMinimaxAgent {
             maxTimeLimitExceeded = false;
             return minimax(gameState, gameState.getPlayer(), true, 1,
                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY).getMove();
-        } else if(timeRemaining <= 15) {
+        } else if(timeRemaining <= 25) {
             depth = 2;
             maxTimeLimitExceeded = false;
             return minimax(gameState, gameState.getPlayer(), true, 2,

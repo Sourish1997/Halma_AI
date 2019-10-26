@@ -153,12 +153,6 @@ public class Main {
                 System.out.println(move + "\n");
                 printGameBoard(gameState);
                 agent1Turn = false;
-
-                try {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("src/time.txt", true));
-                    writer.write(timeRemaining1 + "\n");
-                    writer.close();
-                } catch(IOException e) {}
             } else {
                 long startTime = System.currentTimeMillis();
                 agent2 = new OptimizedMinimaxAgent(gameState, timeRemaining2);
